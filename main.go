@@ -8,27 +8,30 @@ import (
 
 func main() {
 
-	var sum float64
 	for {
-		choiceValuta, choiceValutaResult, err := menuUser()
+		inputSourceCurrency := inputSourceCurrency()
+
+		sum, err := inputSum()
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
-		fmt.Print("Введите сумму для расчета: ")
-		_, err = fmt.Scan(&sum)
+		targetCurrency := targetCurrency()
+
+		err = verificationInputValute(inputSourceCurrency, targetCurrency)
 		if err != nil {
-			fmt.Println("Произошла ошибка при вводе суммы: ", err)
+			fmt.Println(err)
 			continue
 		}
 
-		calculate, err := calculationResult(sum, choiceValuta, choiceValutaResult)
+		calculate, err := calculationResult(sum, inputSourceCurrency, targetCurrency)
 		if err != nil {
-			fmt.Println("Ошибка расчета: ", err)
+			fmt.Println(err)
 			continue
+
 		}
 
-		fmt.Printf("Результат расчета %.2f %s\n", calculate, strings.ToUpper(choiceValutaResult))
+		fmt.Printf("Результат расчета %.2f %s\n", calculate, strings.ToUpper(targetCurrency))
 
 		fmt.Print("Хотите продолжить (y/n)? ")
 		var continueInput string
@@ -37,32 +40,66 @@ func main() {
 			fmt.Println("Всего хорошего")
 			break
 		}
+
 	}
 }
 
-func menuUser() (string, string, error) {
-	var choiceValuta string
-	var choiceValutaResult string
+func inputSourceCurrency() string {
+	for {
+		fmt.Print("Введите исходную валюту (USD/EUR/RUB): ")
+		var currency string
+		fmt.Scan(&currency)
+		currency = strings.ToUpper(currency)
+		if isValidCurrency(currency) {
+			return currency
+		}
+		fmt.Println("Ошибка! Попробуйте снова")
+	}
+}
 
-	fmt.Println("__Меню__")
-	fmt.Print("Выберете валюту из списка: USD/EUR/RUB - ")
-	fmt.Scan(&choiceValuta)
+func inputSum() (float64, error) {
+	for {
+		var sum float64
+		fmt.Print("Введите сумму для расчета: ")
+		_, err := fmt.Scan(&sum)
 
-	fmt.Print("Выберете валюту для расчета: ")
-	fmt.Scan(&choiceValutaResult)
+		if err != nil {
+			fmt.Println("Ошибка! Введено не число. Попробуйте снова.")
+			continue // Повторяем ввод суммы
+		}
+		if sum <= 0 {
+			return 0.0, errors.New("Введено отрицательное число, работает только с положительными")
+		}
+		return sum, nil
+	}
 
-	choiceValuta = strings.ToUpper(choiceValuta)
-	choiceValutaResult = strings.ToUpper(choiceValutaResult)
+}
 
-	if !isValidCurrency(choiceValuta) && !isValidCurrency(choiceValutaResult) {
-		return " ", " ", errors.New("Введена не корректная валюта, просьба попробовать еще раз")
+func targetCurrency() string {
+	for {
+		fmt.Print("Введите валюту для конвертации: ")
+		var currencyTarget string
+		fmt.Scan(&currencyTarget)
+		currencyTarget = strings.ToUpper(currencyTarget)
+
+		if isValidCurrency(currencyTarget) {
+			return currencyTarget
+		}
+		fmt.Println("Ошибка! Попробуйте сноваfffff")
+	}
+}
+
+func verificationInputValute(choiceValuta, choiceValutaResult string) error {
+
+	if !isValidCurrency(choiceValuta) || !isValidCurrency(choiceValutaResult) {
+		return errors.New("Введена не корректная валюта, просьба попробовать еще раз")
 	}
 
 	if choiceValuta == choiceValutaResult {
-		return " ", " ", errors.New("Ошибка, введены одинаковые валюты")
+		return errors.New("Ошибка, введены одинаковые валюты")
 	}
 
-	return choiceValuta, choiceValutaResult, nil
+	return nil
 }
 
 func isValidCurrency(currency string) bool {
