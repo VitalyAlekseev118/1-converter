@@ -28,7 +28,7 @@ func main() {
 
 		}
 
-		for key, value := range mapConverter {
+		for key, value := range *mapConverter {
 			fmt.Printf("Результат расчета %s : %.2f\n", key, value)
 		}
 
@@ -86,7 +86,7 @@ func isValidCurrency(currency string) bool {
 	return false
 }
 
-func calculationResult(sum float64, inputSourceTargetCurrency string) (map[string]float64, error) {
+func calculationResult(sum float64, inputSourceTargetCurrency string) (*map[string]float64, error) {
 
 	m := make(map[string]float64)
 
@@ -107,5 +107,5 @@ func calculationResult(sum float64, inputSourceTargetCurrency string) (map[strin
 		return nil, errors.New("Конвертация между указанными валютами не поддерживается")
 	}
 
-	return m, nil
+	return &m, nil
 }
